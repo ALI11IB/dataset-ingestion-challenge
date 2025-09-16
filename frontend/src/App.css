@@ -1,0 +1,7 @@
+/* App-specific styles - imports consolidated global styles */
+@import './styles/globals.css';
+
+.App {
+  min-height: 100vh;
+}
+
