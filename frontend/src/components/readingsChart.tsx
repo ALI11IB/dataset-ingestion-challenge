@@ -21,9 +21,6 @@ interface ReadingsChartProps {
   endDate?: string;
 }
 
-/**
- * Simple line chart component for air quality data visualization
- */
 const ReadingsChart: React.FC<ReadingsChartProps> = ({
   parameter,
   parameterDisplayName,
@@ -50,7 +47,6 @@ const ReadingsChart: React.FC<ReadingsChartProps> = ({
         endDate
       );
 
-      // Transform data for chart display
       const chartData: ChartDataPoint[] = response.data
         .map((point: any) => {
           const value = point[parameter];

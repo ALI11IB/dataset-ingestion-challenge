@@ -45,7 +45,6 @@ const Chart: React.FC<ChartTabsProps> = ({
     autoFetch: true,
   });
 
-  // Transform data for chart display with memoization
   const chartData = useMemo((): ChartDataPoint[] => {
     return rawData
       .map((point) => {
@@ -69,7 +68,6 @@ const Chart: React.FC<ChartTabsProps> = ({
       );
   }, [rawData, parameter]);
 
-  // Calculate statistics
   const stats = useMemo(() => {
     if (chartData.length === 0) return null;
 

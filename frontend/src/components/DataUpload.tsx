@@ -18,7 +18,6 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
       return;
     }
 
-    // Validate file format and size
     const basicErrors = validateCSVFile(selectedFile);
 
     if (basicErrors.length > 0) {
@@ -28,7 +27,6 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
       return;
     }
 
-    // Validate CSV content
     const contentErrors = await validateCSVContent(selectedFile);
 
     if (contentErrors.length > 0) {
@@ -81,7 +79,6 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
       return;
     }
 
-    // Re-validate file before upload
     const errors = validateCSVFile(file);
     if (errors.length > 0) {
       errors.forEach((error) => toast.error(error));
@@ -97,7 +94,6 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
 
       const { totalRows, validRows, invalidRows } = result.summary;
 
-      // Show appropriate success/warning messages
       if (validRows > 0) {
         toast.success(`Successfully processed ${validRows} valid records!`);
         onDataUploaded();
@@ -112,7 +108,6 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
         `Total: ${totalRows} | Valid: ${validRows} | Invalid: ${invalidRows}`
       );
 
-      // Reset file input
       setFile(null);
       const fileInput = document.getElementById(
         "file-upload"

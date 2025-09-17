@@ -1,19 +1,16 @@
-// Utility functions for the backend
-
-import { NUMERIC_FIELD_MAPPING, MISSING_VALUE_INDICATOR } from '../constants';
+import { MISSING_VALUE_INDICATOR } from "../constants";
 
 /**
  * Parse numeric value from CSV string
  */
 export const parseNumericValue = (value: string): number | null => {
-  if (!value || value.trim() === '' || value === MISSING_VALUE_INDICATOR) {
+  if (!value || value.trim() === "" || value === MISSING_VALUE_INDICATOR) {
     return null;
   }
-  
-  // Replace comma with dot for European decimal format
-  const normalizedValue = value.replace(',', '.');
+
+  const normalizedValue = value.replace(",", ".");
   const parsed = parseFloat(normalizedValue);
-  
+
   return isNaN(parsed) ? null : parsed;
 };
 
@@ -21,16 +18,16 @@ export const parseNumericValue = (value: string): number | null => {
  * Parse date from DD/MM/YYYY format
  */
 export const parseDate = (dateString: string): Date | null => {
-  if (!dateString || dateString.trim() === '') {
+  if (!dateString || dateString.trim() === "") {
     return null;
   }
 
   try {
-    const [day, month, year] = dateString.split('/');
+    const [day, month, year] = dateString.split("/");
     if (!day || !month || !year) {
       return null;
     }
-    
+
     const date = new Date(`${year}-${month}-${day}`);
     return isNaN(date.getTime()) ? null : date;
   } catch (error) {
@@ -42,15 +39,14 @@ export const parseDate = (dateString: string): Date | null => {
  * Parse time from HH.MM.SS format to HH:MM:SS
  */
 export const parseTime = (timeString: string): string | null => {
-  if (!timeString || timeString.trim() === '') {
+  if (!timeString || timeString.trim() === "") {
     return null;
   }
 
   try {
-    // Convert time format from HH.MM.SS to HH:MM:SS
-    const formattedTime = timeString.replace(/\./g, ':');
+    const formattedTime = timeString.replace(/\./g, ":");
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
-    
+
     return timeRegex.test(formattedTime) ? formattedTime : null;
   } catch (error) {
     return null;
@@ -64,9 +60,9 @@ export const generateRandomFilename = (originalName: string): string => {
   const randomName = Array(32)
     .fill(null)
     .map(() => Math.round(Math.random() * 16).toString(16))
-    .join('');
-  
-  const extension = originalName.split('.').pop();
+    .join("");
+
+  const extension = originalName.split(".").pop();
   return `${randomName}.${extension}`;
 };
 
@@ -74,7 +70,7 @@ export const generateRandomFilename = (originalName: string): string => {
  * Validate CSV file type
  */
 export const isValidCSVFile = (file: Express.Multer.File): boolean => {
-  return file.mimetype === 'text/csv' || file.originalname.endsWith('.csv');
+  return file.mimetype === "text/csv" || file.originalname.endsWith(".csv");
 };
 
 /**
@@ -82,39 +78,53 @@ export const isValidCSVFile = (file: Express.Multer.File): boolean => {
  */
 export const createErrorCSV = (errorRows: any[]): string => {
   if (errorRows.length === 0) {
-    return '';
+    return "";
   }
 
   const headers = [
-    'Row_Index', 'Date', 'Time', 'CO(GT)', 'PT08.S1(CO)', 'NMHC(GT)', 
-    'C6H6(GT)', 'PT08.S2(NMHC)', 'NOx(GT)', 'PT08.S3(NOx)', 'NO2(GT)', 
-    'PT08.S4(NO2)', 'PT08.S5(O3)', 'T', 'RH', 'AH', 'Error_Reasons'
+    "Row_Index",
+    "Date",
+    "Time",
+    "CO(GT)",
+    "PT08.S1(CO)",
+    "NMHC(GT)",
+    "C6H6(GT)",
+    "PT08.S2(NMHC)",
+    "NOx(GT)",
+    "PT08.S3(NOx)",
+    "NO2(GT)",
+    "PT08.S4(NO2)",
+    "PT08.S5(O3)",
+    "T",
+    "RH",
+    "AH",
+    "Error_Reasons",
   ];
-  
-  const csvRows = errorRows.map(row => {
+
+  const csvRows = errorRows.map((row) => {
     const values = [
       row.rowIndex.toString(),
-      row.originalRow.Date || '',
-      row.originalRow.Time || '',
-      row.originalRow['CO(GT)'] || '',
-      row.originalRow['PT08.S1(CO)'] || '',
-      row.originalRow['NMHC(GT)'] || '',
-      row.originalRow['C6H6(GT)'] || '',
-      row.originalRow['PT08.S2(NMHC)'] || '',
-      row.originalRow['NOx(GT)'] || '',
-      row.originalRow['PT08.S3(NOx)'] || '',
-      row.originalRow['NO2(GT)'] || '',
-      row.originalRow['PT08.S4(NO2)'] || '',
-      row.originalRow['PT08.S5(O3)'] || '',
-      row.originalRow['T'] || '',
-      row.originalRow['RH'] || '',
-      row.originalRow['AH'] || '',
-      `"${row.errors.join('; ')}"`
+      row.originalRow.Date || "",
+      row.originalRow.Time || "",
+      row.originalRow["CO(GT)"] || "",
+      row.originalRow["PT08.S1(CO)"] || "",
+      row.originalRow["NMHC(GT)"] || "",
+      row.originalRow["C6H6(GT)"] || "",
+      row.originalRow["PT08.S2(NMHC)"] || "",
+      row.originalRow["NOx(GT)"] || "",
+      row.originalRow["PT08.S3(NOx)"] || "",
+      row.originalRow["NO2(GT)"] || "",
+      row.originalRow["PT08.S4(NO2)"] || "",
+      row.originalRow["PT08.S5(O3)"] || "",
+      row.originalRow["T"] || "",
+      row.originalRow["RH"] || "",
+      row.originalRow["AH"] || "",
+      `"${row.errors.join("; ")}"`,
     ];
-    return values.join(';');
+    return values.join(";");
   });
 
-  return [headers.join(';'), ...csvRows].join('\n');
+  return [headers.join(";"), ...csvRows].join("\n");
 };
 
 /**
@@ -122,19 +132,19 @@ export const createErrorCSV = (errorRows: any[]): string => {
  */
 export const getParameterDisplayName = (parameter: string): string => {
   const displayNames: Record<string, string> = {
-    co: 'Carbon Monoxide (CO)',
-    nmhc: 'Non-Methanic Hydrocarbons (NMHC)',
-    c6h6: 'Benzene (C6H6)',
-    nox: 'Nitrogen Oxides (NOx)',
-    no2: 'Nitrogen Dioxide (NO2)',
-    pt08_s1_co: 'PT08.S1 (CO)',
-    pt08_s2_nmhc: 'PT08.S2 (NMHC)',
-    pt08_s3_nox: 'PT08.S3 (NOx)',
-    pt08_s4_no2: 'PT08.S4 (NO2)',
-    pt08_s5_o3: 'PT08.S5 (O3)',
-    temperature: 'Temperature',
-    relative_humidity: 'Relative Humidity',
-    absolute_humidity: 'Absolute Humidity',
+    co: "Carbon Monoxide (CO)",
+    nmhc: "Non-Methanic Hydrocarbons (NMHC)",
+    c6h6: "Benzene (C6H6)",
+    nox: "Nitrogen Oxides (NOx)",
+    no2: "Nitrogen Dioxide (NO2)",
+    pt08_s1_co: "PT08.S1 (CO)",
+    pt08_s2_nmhc: "PT08.S2 (NMHC)",
+    pt08_s3_nox: "PT08.S3 (NOx)",
+    pt08_s4_no2: "PT08.S4 (NO2)",
+    pt08_s5_o3: "PT08.S5 (O3)",
+    temperature: "Temperature",
+    relative_humidity: "Relative Humidity",
+    absolute_humidity: "Absolute Humidity",
   };
 
   return displayNames[parameter] || parameter;
@@ -145,20 +155,20 @@ export const getParameterDisplayName = (parameter: string): string => {
  */
 export const getParameterUnit = (parameter: string): string => {
   const units: Record<string, string> = {
-    co: 'mg/m³',
-    nmhc: 'mg/m³',
-    c6h6: 'mg/m³',
-    nox: 'ppb',
-    no2: 'ppb',
-    pt08_s1_co: 'ppb',
-    pt08_s2_nmhc: 'ppb',
-    pt08_s3_nox: 'ppb',
-    pt08_s4_no2: 'ppb',
-    pt08_s5_o3: 'ppb',
-    temperature: '°C',
-    relative_humidity: '%',
-    absolute_humidity: 'g/m³',
+    co: "mg/m³",
+    nmhc: "mg/m³",
+    c6h6: "mg/m³",
+    nox: "ppb",
+    no2: "ppb",
+    pt08_s1_co: "ppb",
+    pt08_s2_nmhc: "ppb",
+    pt08_s3_nox: "ppb",
+    pt08_s4_no2: "ppb",
+    pt08_s5_o3: "ppb",
+    temperature: "°C",
+    relative_humidity: "%",
+    absolute_humidity: "g/m³",
   };
 
-  return units[parameter] || '';
+  return units[parameter] || "";
 };

@@ -62,7 +62,6 @@ export class ReadingsController {
 
     const result = await this.readingsService.ingestData(file.path);
 
-    // Prepare response
     const response: UploadResultResponseDto = {
       message:
         result.invalidRows > 0
@@ -75,20 +74,16 @@ export class ReadingsController {
       },
     };
 
-    // Handle error CSV file if there are validation errors
     if (result.errorCSV) {
       const errorFileName = `validation_errors_${Date.now()}.csv`;
       const errorFilePath = join("./uploads", errorFileName);
 
-      // Ensure uploads directory exists
       if (!fs.existsSync("./uploads")) {
         fs.mkdirSync("./uploads", { recursive: true });
       }
 
-      // Save error CSV to temporary file
       fs.writeFileSync(errorFilePath, result.errorCSV);
 
-      // Add download link to response
       response.errorFileDownloadUrl = `/api/readings/download-error/${errorFileName}`;
     }
 
@@ -181,10 +176,13 @@ export class ReadingsController {
       throw new BadRequestException(`Invalid parameter: ${parameter}`);
     }
 
-    const aggregationType = aggregation as 'hourly' | 'daily' | 'monthly' || 'daily';
-    
-    if (!['hourly', 'daily', 'monthly'].includes(aggregationType)) {
-      throw new BadRequestException("Invalid aggregation type. Must be: hourly, daily, or monthly");
+    const aggregationType =
+      (aggregation as "hourly" | "daily" | "monthly") || "daily";
+
+    if (!["hourly", "daily", "monthly"].includes(aggregationType)) {
+      throw new BadRequestException(
+        "Invalid aggregation type. Must be: hourly, daily, or monthly"
+      );
     }
 
     return this.readingsService.getParameterStatistics(
@@ -194,7 +192,6 @@ export class ReadingsController {
       aggregationType
     );
   }
-
 
   /**
    * Download error file for validation issues
@@ -206,20 +203,16 @@ export class ReadingsController {
   ): Promise<void> {
     const filePath = join("./uploads", filename);
 
-    // Check if file exists
     if (!fs.existsSync(filePath)) {
       throw new BadRequestException("Error file not found or has expired");
     }
 
-    // Set headers for file download
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-    // Send file
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
 
-    // Clean up file after download
     fileStream.on("end", () => {
       setTimeout(() => {
         try {

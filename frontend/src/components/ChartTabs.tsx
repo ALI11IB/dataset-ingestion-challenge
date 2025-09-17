@@ -17,9 +17,6 @@ import { ReadingsService } from "../services/readingsService";
 import { ChartTabsProps, ChartDataPoint, ChartType } from "../types";
 import { createTimestamp } from "../utils";
 
-/**
- * Component for displaying air quality data in different chart formats
- */
 const ChartTabs: React.FC<ChartTabsProps> = ({
   parameter,
   parameterDisplayName,
@@ -47,7 +44,6 @@ const ChartTabs: React.FC<ChartTabsProps> = ({
         endDate
       );
 
-      // Transform data for chart display
       const chartData: ChartDataPoint[] = response.data
         .map((point: any) => {
           const value = point[parameter];
@@ -225,12 +221,12 @@ const ChartTabs: React.FC<ChartTabsProps> = ({
           >
             📊 Bar Chart
           </button>
-            <button
-              className={`tab-button ${activeTab === "area" ? "active" : ""}`}
-              onClick={() => setActiveTab("area")}
-            >
-              📉 Area Chart
-            </button>
+          <button
+            className={`tab-button ${activeTab === "area" ? "active" : ""}`}
+            onClick={() => setActiveTab("area")}
+          >
+            📉 Area Chart
+          </button>
         </div>
       </div>
 

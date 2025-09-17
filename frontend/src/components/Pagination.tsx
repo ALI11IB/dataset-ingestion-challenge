@@ -28,14 +28,12 @@ const Pagination: React.FC<PaginationProps> = ({
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
 
       if (currentPage > 3) {
         pages.push("...");
       }
 
-      // Show pages around current page
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -47,7 +45,6 @@ const Pagination: React.FC<PaginationProps> = ({
         pages.push("...");
       }
 
-      // Always show last page
       if (totalPages > 1) {
         pages.push(totalPages);
       }
@@ -66,7 +63,7 @@ const Pagination: React.FC<PaginationProps> = ({
           Showing {startItem.toLocaleString()} to {endItem.toLocaleString()} of{" "}
           {totalItems.toLocaleString()} results
         </span>
-        
+
         <div className="items-per-page">
           <label htmlFor="items-per-page">Items per page:</label>
           <select
@@ -94,7 +91,7 @@ const Pagination: React.FC<PaginationProps> = ({
         >
           ««
         </button>
-        
+
         <button
           className="pagination-button"
           onClick={() => onPageChange(currentPage - 1)}
@@ -130,7 +127,7 @@ const Pagination: React.FC<PaginationProps> = ({
         >
           ›
         </button>
-        
+
         <button
           className="pagination-button"
           onClick={() => onPageChange(totalPages)}

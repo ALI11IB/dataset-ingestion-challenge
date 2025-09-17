@@ -21,7 +21,6 @@ const Dashboard: React.FC = () => {
     error: parametersError,
   } = useAvailableParameters();
 
-  // Set default parameter when available
   React.useEffect(() => {
     if (parameters.length > 0 && !selectedParameter) {
       setSelectedParameter(parameters[0]);

@@ -22,17 +22,17 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
   parameterUnit,
   startDate,
   endDate,
-  aggregation = 'daily',
+  aggregation = "daily",
 }) => {
   const [activeTab, setActiveTab] = useState<ChartType>("line");
 
-  const {
-    statistics,
-    loading,
-    error,
-  } = useParameterStatistics(parameter, startDate, endDate, aggregation);
+  const { statistics, loading, error } = useParameterStatistics(
+    parameter,
+    startDate,
+    endDate,
+    aggregation
+  );
 
-  // Transform data for chart display
   const chartData = useMemo(() => {
     return statistics.map((stat) => ({
       period: new Date(stat.period).toLocaleDateString(),
@@ -65,7 +65,11 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
           <div className="chart-tooltip">
             <p className="tooltip-label">{label}</p>
             {payload.map((entry: any, index: number) => (
-              <p key={index} className="tooltip-value" style={{ color: entry.color }}>
+              <p
+                key={index}
+                className="tooltip-value"
+                style={{ color: entry.color }}
+              >
                 {entry.name}: {formatTooltipValue(entry.value)}
               </p>
             ))}
@@ -79,11 +83,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
       ...commonProps,
       children: [
         <CartesianGrid key="grid" strokeDasharray="3 3" />,
-        <XAxis
-          key="xaxis"
-          dataKey="period"
-          tick={{ fontSize: 12 }}
-        />,
+        <XAxis key="xaxis" dataKey="period" tick={{ fontSize: 12 }} />,
         <YAxis key="yaxis" tick={{ fontSize: 12 }} />,
         <Tooltip key="tooltip" content={tooltipContent} />,
         <Legend key="legend" />,
@@ -193,19 +193,25 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
         <div className="chart-controls">
           <div className="chart-type-selector">
             <button
-              className={`chart-type-button ${activeTab === "line" ? "active" : ""}`}
+              className={`chart-type-button ${
+                activeTab === "line" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("line")}
             >
               Line
             </button>
             <button
-              className={`chart-type-button ${activeTab === "bar" ? "active" : ""}`}
+              className={`chart-type-button ${
+                activeTab === "bar" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("bar")}
             >
               Bar
             </button>
             <button
-              className={`chart-type-button ${activeTab === "area" ? "active" : ""}`}
+              className={`chart-type-button ${
+                activeTab === "area" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("area")}
             >
               Area
@@ -228,7 +234,10 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
           </div>
           <div className="chart-stat">
             <div className="chart-stat-value">
-              {Math.round(chartData.reduce((sum, d) => sum + d.count, 0) / chartData.length)}
+              {Math.round(
+                chartData.reduce((sum, d) => sum + d.count, 0) /
+                  chartData.length
+              )}
             </div>
             <div className="chart-stat-label">Avg Data Points</div>
           </div>
