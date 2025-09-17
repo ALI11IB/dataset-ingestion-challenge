@@ -1,49 +1,51 @@
-import React, { useState, useEffect } from "react";
-import ChartTabs from "./ChartTabs";
-import { ReadingsService } from "../services/readingsService";
+import React, { useState } from "react";
+import Chart from "./charts/Chart";
+import { useAvailableParameters } from "../hooks/useReadingsData";
 import { getParameterInfo } from "../utils";
 
-/**
- * Dashboard component for air quality data visualization
- */
 const Dashboard: React.FC = () => {
-  const [availableParameters, setAvailableParameters] = useState<string[]>([]);
   const [selectedParameter, setSelectedParameter] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAvailableParameters();
-  }, []);
+  const {
+    parameters,
+    loading: parametersLoading,
+    error: parametersError,
+  } = useAvailableParameters();
 
-  const loadAvailableParameters = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const parameters = await ReadingsService.getAvailableParameters();
-      setAvailableParameters(parameters);
-      if (parameters.length > 0) {
-        setSelectedParameter(parameters[0]);
-      }
-    } catch (err) {
-      setError("Failed to load available parameters");
-      console.error("Error loading parameters:", err);
-    } finally {
-      setLoading(false);
+  // Set default parameter when available
+  React.useEffect(() => {
+    if (parameters.length > 0 && !selectedParameter) {
+      setSelectedParameter(parameters[0]);
     }
-  };
+  }, [parameters, selectedParameter]);
 
-  if (loading) {
+  if (parametersLoading) {
     return (
       <div className="dashboard">
-        <div className="loading">Loading parameters...</div>
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p className="loading-text">Loading parameters...</p>
+        </div>
       </div>
     );
   }
 
-  const parameterInfo = selectedParameter ? getParameterInfo(selectedParameter) : null;
+  if (parametersError) {
+    return (
+      <div className="dashboard">
+        <div className="error">
+          <h4>Error Loading Parameters</h4>
+          <p>{parametersError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const parameterInfo = selectedParameter
+    ? getParameterInfo(selectedParameter)
+    : null;
 
   return (
     <div className="dashboard">
@@ -56,9 +58,9 @@ const Dashboard: React.FC = () => {
             id="parameter-select"
             value={selectedParameter}
             onChange={(e) => setSelectedParameter(e.target.value)}
-            disabled={loading}
+            disabled={parametersLoading}
           >
-            {availableParameters.map((param) => {
+            {parameters.map((param) => {
               const info = getParameterInfo(param);
               return (
                 <option key={param} value={param}>
@@ -90,10 +92,8 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {error && <div className="error">{error}</div>}
-
       {selectedParameter && parameterInfo && (
-        <ChartTabs
+        <Chart
           parameter={selectedParameter}
           parameterDisplayName={parameterInfo.displayName}
           parameterUnit={parameterInfo.unit}

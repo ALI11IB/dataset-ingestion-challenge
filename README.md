@@ -1,281 +1,224 @@
-# Air Quality Data Analysis Dashboard
+# Air Quality Data Analysis Application
 
-A full-stack web application for analyzing and visualizing air quality data from Italian monitoring stations. This application provides an interactive dashboard to explore time series data with filtering capabilities.
+A full-stack web application for analyzing and visualizing air quality data with interactive charts and data ingestion capabilities.
 
-## Features
+## 🚀 Quick Start
 
-### Backend (NestJS + PostgreSQL)
-- **Data Ingestion**: REST API endpoint to upload and process CSV files
-- **Database Storage**: PostgreSQL database with optimized schema for air quality data
-- **Time Series API**: Endpoints to fetch data by parameter and date range
-- **Data Validation**: Input validation and error handling
-
-### Frontend (React + TypeScript)
-- **Interactive Dashboard**: Modern, responsive UI for data visualization
-- **Parameter Selection**: Choose from 13 different air quality parameters
-- **Date Range Filtering**: Filter data by custom date ranges
-- **Interactive Charts**: Real-time charts using Recharts library
-- **Data Upload**: File upload interface for CSV data ingestion
-
-## Dataset
-
-The application processes air quality data containing 9,358 hourly records collected from March 2004 to February 2005. The dataset includes:
-
-- **Date/Time**: Timestamps for each record
-- **CO (mg/m³)**: Carbon monoxide concentration
-- **Non-Methanic Hydrocarbons (NMHC)**: Concentration levels
-- **Benzene (mg/m³)**: Benzene concentration
-- **NOx (ppb)**: Total nitrogen oxides
-- **NO2 (ppb)**: Nitrogen dioxide levels
-- **Sensor Readings**: Various metal oxide chemical sensor values
-- **Environmental Data**: Temperature, relative humidity, absolute humidity
-
-## Tech Stack
-
-### Backend
-- **Framework**: NestJS
-- **Database**: PostgreSQL
-- **ORM**: TypeORM
-- **Language**: TypeScript
-- **File Processing**: CSV parser with European decimal format support
-
-### Frontend
-- **Framework**: React 18
-- **Language**: TypeScript
-- **Charts**: Recharts
-- **HTTP Client**: Axios
-- **Build Tool**: Webpack
-- **Styling**: CSS3 with modern design
-
-## Prerequisites
-
-Before running the application, ensure you have the following installed:
+### Prerequisites
 
 - **Node.js** (v16 or higher)
-- **npm** (v8 or higher)
 - **PostgreSQL** (v12 or higher)
+- **npm** or **yarn**
 
-## Installation & Setup
+### Installation & Setup
 
-### 1. Clone the Repository
+1. **Clone the repository**
 
-```bash
-git clone <repository-url>
-cd air-quality-dashboard
+   ```bash
+   git clone <repository-url>
+   cd dataset-ingestion-challenge
+   ```
+
+2. **Backend Setup**
+
+   ```bash
+   cd backend
+   npm install
+
+   # Copy environment file and configure database
+   cp env.example .env
+   # Edit .env with your PostgreSQL credentials
+
+   # Start the backend server
+   npm run start:dev
+   ```
+
+3. **Frontend Setup**
+
+   ```bash
+   cd frontend
+   npm install
+
+   # Start the frontend development server
+   npm start
+   ```
+
+4. **Access the Application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:3001
+
+## 📁 Project Structure
+
+```
+dataset-ingestion-challenge/
+├── backend/                 # NestJS API server
+│   ├── src/
+│   │   ├── readings/       # Air quality data endpoints
+│   │   ├── common/         # Shared services & utilities
+│   │   └── config/         # Configuration files
+│   └── uploads/            # CSV file uploads
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API service layer
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── utils/          # Utility functions
+│   └── public/             # Static assets
+└── AirQualityUCI.csv       # Sample dataset
 ```
 
-### 2. Database Setup
+## 🛠️ Available Scripts
 
-1. Install and start PostgreSQL
-2. Create a database named `air_quality`:
+### Backend
 
-```sql
-CREATE DATABASE air_quality;
-```
+- `npm run start` - Start production server
+- `npm run start:dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run test` - Run tests
 
-3. Update database credentials in `backend/config.env`:
+### Frontend
+
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run tests
+- `npm run eject` - Eject from Create React App
+
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+Create a `.env` file in the `backend` directory:
 
 ```env
+# Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=postgres
+DB_USERNAME=your_username
 DB_PASSWORD=your_password
-DB_DATABASE=air_quality
+DB_NAME=air_quality_db
+
+# Application
+PORT=3001
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
 ```
 
-### 3. Backend Setup
+### Database Setup
+
+1. Create a PostgreSQL database named `air_quality_db`
+2. The application will automatically create tables on first run
+3. Use the provided `AirQualityUCI.csv` for initial data ingestion
+
+## 📊 Features
+
+- **Data Upload**: Upload CSV files with air quality measurements
+- **Interactive Charts**: Visualize data with line, bar, and area charts
+- **Parameter Selection**: Filter data by specific air quality parameters
+- **Date Range Filtering**: Analyze data within custom time periods
+- **Real-time Dashboard**: Monitor air quality trends and statistics
+- **Data Validation**: Comprehensive CSV validation with error reporting
+
+## 🎯 API Endpoints
+
+### Data Management
+
+- `POST /readings/ingest` - Upload and process CSV data
+- `GET /readings/parameters` - Get available parameters
+- `GET /readings/summary` - Get data summary statistics
+- `GET /readings/time-series` - Get time series data
+
+## 🧪 Testing
+
+### Backend Tests
 
 ```bash
 cd backend
-npm install
+npm run test
+npm run test:e2e
 ```
 
-### 4. Frontend Setup
-
-```bash
-cd ../frontend
-npm install
-```
-
-## Running the Application
-
-### 1. Start the Backend
-
-```bash
-cd backend
-npm run start:dev
-```
-
-The backend will start on `http://localhost:3001`
-
-### 2. Start the Frontend
+### Frontend Tests
 
 ```bash
 cd frontend
-npm start
+npm test
 ```
 
-The frontend will start on `http://localhost:3000`
+## 🚀 Deployment
 
-### 3. Upload Data
-
-1. Open the application in your browser at `http://localhost:3000`
-2. Use the "Upload Air Quality Data" section to upload the `AirQualityUCI.csv` file
-3. Wait for the data ingestion to complete
-4. Start exploring the data using the dashboard
-
-## API Endpoints
-
-### Data Ingestion
-- `POST /api/air-quality/ingest` - Upload CSV file for data ingestion
-
-### Data Retrieval
-- `GET /api/air-quality/parameters` - Get available parameters
-- `GET /api/air-quality/summary` - Get data summary (total records, date range)
-- `GET /api/air-quality/data?parameter={param}&startDate={date}&endDate={date}` - Get time series data
-
-### Example API Usage
+### Production Build
 
 ```bash
-# Get available parameters
-curl http://localhost:3001/api/air-quality/parameters
-
-# Get CO data for a specific date range
-curl "http://localhost:3001/api/air-quality/data?parameter=co&startDate=2004-03-10&endDate=2004-03-15"
-
-# Get data summary
-curl http://localhost:3001/api/air-quality/summary
-```
-
-## Available Parameters
-
-The application supports visualization of the following parameters:
-
-- **CO**: Carbon Monoxide (mg/m³)
-- **NMHC**: Non-Methanic Hydrocarbons (mg/m³)
-- **C6H6**: Benzene (mg/m³)
-- **NOx**: Nitrogen Oxides (ppb)
-- **NO2**: Nitrogen Dioxide (ppb)
-- **PT08.S1 (CO)**: Metal oxide sensor 1 (ppb)
-- **PT08.S2 (NMHC)**: Metal oxide sensor 2 (ppb)
-- **PT08.S3 (NOx)**: Metal oxide sensor 3 (ppb)
-- **PT08.S4 (NO2)**: Metal oxide sensor 4 (ppb)
-- **PT08.S5 (O3)**: Metal oxide sensor 5 (ppb)
-- **Temperature**: Ambient temperature (°C)
-- **Relative Humidity**: Relative humidity (%)
-- **Absolute Humidity**: Absolute humidity (g/m³)
-
-## Project Structure
-
-```
-air-quality-dashboard/
-├── backend/
-│   ├── src/
-│   │   ├── air-quality/
-│   │   │   ├── air-quality.controller.ts
-│   │   │   ├── air-quality.entity.ts
-│   │   │   ├── air-quality.module.ts
-│   │   │   └── air-quality.service.ts
-│   │   ├── app.module.ts
-│   │   └── main.ts
-│   ├── uploads/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── config.env
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AirQualityChart.tsx
-│   │   │   ├── Dashboard.tsx
-│   │   │   └── DataUpload.tsx
-│   │   ├── services/
-│   │   │   └── airQualityService.ts
-│   │   ├── App.tsx
-│   │   ├── App.css
-│   │   ├── index.tsx
-│   │   └── index.css
-│   ├── public/
-│   │   └── index.html
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── webpack.config.js
-├── AirQualityUCI.csv
-└── README.md
-```
-
-## Development
-
-### Backend Development
-
-```bash
+# Backend
 cd backend
-npm run start:dev  # Start with hot reload
-npm run build      # Build for production
+npm run build
+npm run start:prod
+
+# Frontend
+cd frontend
+npm run build
+# Serve the build folder with a web server
 ```
 
-### Frontend Development
+### Docker (Optional)
 
 ```bash
-cd frontend
-npm start          # Start development server
-npm run build      # Build for production
+# Build and run with Docker Compose
+docker-compose up --build
 ```
 
-## Data Processing
+## 📝 Data Format
 
-The application handles European CSV format with:
-- Semicolon (`;`) as delimiter
-- Comma (`,`) as decimal separator
-- Automatic conversion to standard numeric format
-- Null value handling for missing data points
+The application expects CSV files with the following columns:
 
-## Performance Considerations
+- `Date` - Date in YYYY-MM-DD format
+- `Time` - Time in HH:MM:SS format
+- `CO(GT)` - Carbon monoxide concentration
+- `PT08.S1(CO)` - Metal oxide sensor 1
+- `NMHC(GT)` - Non-methanic hydrocarbons
+- `C6H6(GT)` - Benzene concentration
+- `PT08.S2(NMHC)` - Metal oxide sensor 2
+- `NOx(GT)` - Total nitrogen oxides
+- `PT08.S3(NOx)` - Metal oxide sensor 3
+- `NO2(GT)` - Nitrogen dioxide
+- `PT08.S4(NO2)` - Metal oxide sensor 4
+- `PT08.S5(O3)` - Metal oxide sensor 5
+- `T` - Temperature
+- `RH` - Relative humidity
+- `AH` - Absolute humidity
 
-- **Batch Processing**: Data is saved in batches of 1000 records to optimize memory usage
-- **Database Indexing**: Automatic indexing on date fields for fast queries
-- **Chart Optimization**: Data is filtered and sorted on the backend before sending to frontend
-- **Responsive Design**: Mobile-friendly interface with adaptive layouts
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**
-   - Verify PostgreSQL is running
-   - Check database credentials in `config.env`
-   - Ensure database `air_quality` exists
-
-2. **CORS Errors**
-   - Backend CORS is configured for `http://localhost:3000`
-   - Ensure frontend is running on the correct port
-
-3. **File Upload Issues**
-   - Ensure CSV file format matches expected structure
-   - Check file size limits (default: no limit set)
-
-4. **Chart Not Loading**
-   - Verify data has been uploaded successfully
-   - Check browser console for API errors
-   - Ensure selected date range contains data
-
-### Logs
-
-- Backend logs are displayed in the terminal where `npm run start:dev` is running
-- Frontend errors are shown in browser console and application UI
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Add tests for new functionality
 5. Submit a pull request
 
-## License
+## 📄 License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License.
 
-## Support
+## 🆘 Troubleshooting
 
-For issues and questions, please check the troubleshooting section or create an issue in the repository.
+### Common Issues
 
+**Database Connection Error**
+
+- Verify PostgreSQL is running
+- Check database credentials in `.env`
+- Ensure database exists
+
+**Port Already in Use**
+
+- Change ports in configuration files
+- Kill existing processes using the ports
+
+**CSV Upload Fails**
+
+- Verify CSV format matches expected columns
+- Check file size limits
+- Ensure proper date/time formatting
+
+For more help, check the PROJECT_OVERVIEW.md file for detailed feature documentation.

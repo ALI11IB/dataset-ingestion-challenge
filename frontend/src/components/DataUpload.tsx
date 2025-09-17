@@ -1,21 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import { ReadingsService } from "../services/readingsService";
 import { DataUploadProps, UploadResult } from "../types";
 import { validateCSVFile, validateCSVContent, formatFileSize } from "../utils";
 
-/**
- * Component for uploading air quality data files
- */
 const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    
+  const handleFileChange = useCallback(async (selectedFile: File) => {
     if (!selectedFile) {
       setFile(null);
       setValidationErrors([]);
@@ -24,28 +20,60 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
 
     // Validate file format and size
     const basicErrors = validateCSVFile(selectedFile);
-    
+
     if (basicErrors.length > 0) {
       setValidationErrors(basicErrors);
       setFile(null);
-      basicErrors.forEach(error => toast.error(error));
+      basicErrors.forEach((error) => toast.error(error));
       return;
     }
 
     // Validate CSV content
     const contentErrors = await validateCSVContent(selectedFile);
-    
+
     if (contentErrors.length > 0) {
       setValidationErrors(contentErrors);
       setFile(null);
-      contentErrors.forEach(error => toast.error(error));
+      contentErrors.forEach((error) => toast.error(error));
       return;
     }
 
     setFile(selectedFile);
     setValidationErrors([]);
     toast.success("File validated successfully! Ready to upload.");
+  }, []);
+
+  const handleFileInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      handleFileChange(selectedFile);
+    }
   };
+
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileChange(e.dataTransfer.files[0]);
+      }
+    },
+    [handleFileChange]
+  );
 
   const handleUpload = async () => {
     if (!file) {
@@ -56,7 +84,7 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
     // Re-validate file before upload
     const errors = validateCSVFile(file);
     if (errors.length > 0) {
-      errors.forEach(error => toast.error(error));
+      errors.forEach((error) => toast.error(error));
       return;
     }
 
@@ -66,33 +94,50 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
 
       const result = await ReadingsService.uploadData(file);
       setUploadResult(result);
-      
+
       const { totalRows, validRows, invalidRows } = result.summary;
-      
+
       // Show appropriate success/warning messages
       if (validRows > 0) {
         toast.success(`Successfully processed ${validRows} valid records!`);
         onDataUploaded();
       }
-      
+
       if (invalidRows > 0) {
         toast.warning(`${invalidRows} rows had validation errors.`);
         toast.info("Click the download link below to get the error details.");
       }
-      
-      toast.info(`Total: ${totalRows} | Valid: ${validRows} | Invalid: ${invalidRows}`);
-      
+
+      toast.info(
+        `Total: ${totalRows} | Valid: ${validRows} | Invalid: ${invalidRows}`
+      );
+
       // Reset file input
       setFile(null);
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+      const fileInput = document.getElementById(
+        "file-upload"
+      ) as HTMLInputElement;
       if (fileInput) {
-        fileInput.value = '';
+        fileInput.value = "";
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Failed to upload data";
+      const errorMessage =
+        err.response?.data?.message || "Failed to upload data";
       toast.error(errorMessage);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const resetUpload = () => {
+    setFile(null);
+    setValidationErrors([]);
+    setUploadResult(null);
+    const fileInput = document.getElementById(
+      "file-upload"
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
 
@@ -101,16 +146,41 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
       <h3>Upload Air Quality Data</h3>
       <p>Upload a CSV file containing air quality measurements</p>
 
-      <div className="file-input">
+      <div
+        className={`file-drop-zone ${dragActive ? "drag-active" : ""} ${
+          file ? "has-file" : ""
+        }`}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+      >
         <input
           type="file"
           accept=".csv"
-          onChange={handleFileChange}
+          onChange={handleFileInputChange}
           id="file-upload"
           disabled={uploading}
         />
         <label htmlFor="file-upload" className={uploading ? "disabled" : ""}>
-          {file ? file.name : "Choose CSV File"}
+          {file ? (
+            <div className="file-selected">
+              <span className="file-icon"></span>
+              <div className="file-details">
+                <div className="file-name">{file.name}</div>
+                <div className="file-size">{formatFileSize(file.size)}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="file-placeholder">
+              <span className="upload-icon"></span>
+              <div className="upload-text">
+                <strong>Click to select</strong> or drag and drop your CSV file
+                here
+              </div>
+              <div className="upload-hint">Maximum file size: 10MB</div>
+            </div>
+          )}
         </label>
       </div>
 
@@ -126,25 +196,29 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
       )}
 
       {file && !validationErrors.length && (
-        <div className="file-info">
-          <p><strong>File:</strong> {file.name}</p>
-          <p><strong>Size:</strong> {formatFileSize(file.size)}</p>
-          <p><strong>Type:</strong> {file.type || "text/csv"}</p>
+        <div className="upload-actions">
+          <button
+            className="btn btn-primary"
+            onClick={handleUpload}
+            disabled={uploading}
+          >
+            {uploading ? "Uploading..." : "Upload Data"}
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={resetUpload}
+            disabled={uploading}
+          >
+            Cancel
+          </button>
         </div>
-      )}
-
-      {file && !validationErrors.length && (
-        <button 
-          className="btn" 
-          onClick={handleUpload} 
-          disabled={uploading}
-        >
-          {uploading ? "Uploading..." : "Upload Data"}
-        </button>
       )}
 
       {uploading && (
         <div className="upload-progress">
+          <div className="progress-bar">
+            <div className="progress-fill"></div>
+          </div>
           <p>Uploading your data... Please wait.</p>
         </div>
       )}
@@ -159,25 +233,42 @@ const DataUpload: React.FC<DataUploadProps> = ({ onDataUploaded }) => {
             </div>
             <div className="summary-item">
               <span className="label">Valid Rows:</span>
-              <span className="value success">{uploadResult.summary.validRows}</span>
+              <span className="value success">
+                {uploadResult.summary.validRows}
+              </span>
             </div>
             <div className="summary-item">
               <span className="label">Invalid Rows:</span>
-              <span className="value error">{uploadResult.summary.invalidRows}</span>
+              <span className="value error">
+                {uploadResult.summary.invalidRows}
+              </span>
             </div>
           </div>
-          
+
           {uploadResult.errorFileDownloadUrl && (
             <div className="error-download">
-              <p>Some rows had validation errors. Download the error file to see details:</p>
-              <button 
+              <p>
+                Some rows had validation errors. Download the error file to see
+                details:
+              </p>
+              <button
                 className="btn btn-secondary"
-                onClick={() => ReadingsService.downloadErrorFile(uploadResult.errorFileDownloadUrl!)}
+                onClick={() =>
+                  ReadingsService.downloadErrorFile(
+                    uploadResult.errorFileDownloadUrl!
+                  )
+                }
               >
-                📥 Download Error File
+                Download Error File
               </button>
             </div>
           )}
+
+          <div className="upload-actions">
+            <button className="btn btn-primary" onClick={resetUpload}>
+              Upload Another File
+            </button>
+          </div>
         </div>
       )}
     </div>

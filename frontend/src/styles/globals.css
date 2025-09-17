@@ -593,10 +593,7 @@ code {
   font-weight: 700;
 }
 
-/* Analytics Components */
-.analytics-overview {
-  margin-bottom: 2rem;
-}
+
 
 .overview-card {
   background: white;
@@ -636,10 +633,6 @@ code {
   font-weight: 600;
 }
 
-.analytics-content {
-  display: grid;
-  gap: 2rem;
-}
 
 .chart-section {
   background: white;
@@ -792,15 +785,15 @@ code {
     text-align: center;
     gap: 1.5rem;
   }
-  
+
   .navigation {
     gap: 1rem;
   }
-  
+
   .main-content {
     padding: 1rem;
   }
-  
+
   .logo h1 {
     font-size: 1.5rem;
   }
@@ -808,28 +801,28 @@ code {
   .page-header h1 {
     font-size: 2rem;
   }
-  
+
   .summary-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .overview-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .insights-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .summary-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .summary-icon {
     width: 50px;
     height: 50px;
@@ -840,7 +833,7 @@ code {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .control-group select,
   .control-group input {
     min-width: auto;
@@ -850,17 +843,17 @@ code {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .chart-tabs {
     justify-content: center;
   }
-  
+
   .tab-button {
     flex: 1;
     justify-content: center;
     min-width: 0;
   }
-  
+
   .chart-tabs-container {
     padding: 15px;
   }
@@ -871,7 +864,7 @@ code {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .nav-link {
     padding: 0.75rem 1rem;
     width: 100%;
@@ -881,7 +874,7 @@ code {
   .chart-tabs {
     flex-direction: column;
   }
-  
+
   .tab-button {
     width: 100%;
   }
