@@ -14,11 +14,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useReadingsData } from "../../hooks/useReadingsData";
-import { ChartTabsProps, ChartDataPoint, ChartType } from "../../types";
+import { ChartProps, ChartDataPoint, ChartType } from "../../types";
 import { createTimestamp } from "../../utils";
 import Pagination from "../Pagination";
 
-const Chart: React.FC<ChartTabsProps> = ({
+const Chart: React.FC<ChartProps> = ({
   parameter,
   parameterDisplayName,
   parameterUnit,
@@ -42,21 +42,24 @@ const Chart: React.FC<ChartTabsProps> = ({
     endDate,
     page,
     limit,
-    autoFetch: true,
+    autoFetch: !!parameter,
   });
 
   const chartData = useMemo((): ChartDataPoint[] => {
-    return rawData
+    const processed = rawData
       .map((point) => {
         const value = point[parameter];
-        if (value === null || value === undefined) return null;
+        if (value === null || value === undefined || value === '') return null;
+
+        const numericValue = Number(value);
+        if (isNaN(numericValue)) return null;
 
         const timestamp = createTimestamp(point.date, point.time);
         if (!timestamp) return null;
 
         return {
           timestamp,
-          value: Number(value),
+          value: numericValue,
           date: point.date,
           time: point.time,
         };
@@ -64,8 +67,10 @@ const Chart: React.FC<ChartTabsProps> = ({
       .filter((point): point is ChartDataPoint => point !== null)
       .sort(
         (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          a.timestamp.getTime() - b.timestamp.getTime()
       );
+    
+    return processed;
   }, [rawData, parameter]);
 
   const stats = useMemo(() => {
@@ -79,26 +84,37 @@ const Chart: React.FC<ChartTabsProps> = ({
     return { min, max, avg, count: chartData.length };
   }, [chartData]);
 
+  const yAxisDomain = useMemo(() => {
+    if (chartData.length === 0) {
+      return ['auto', 'auto'];
+    }
+    
+    const values = chartData.map((d) => d.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    if (min === max) {
+      return [Math.max(0, min - 1), max + 1];
+    }
+    
+    const padding = (max - min) * 0.1;
+    return [Math.max(0, min - padding), max + padding];
+  }, [chartData]);
+
   const formatTooltipValue = (value: number) => {
     return `${value.toFixed(2)} ${parameterUnit}`;
   };
 
-  const formatXAxisLabel = (tickItem: string) => {
-    const date = new Date(tickItem);
-    return date.toLocaleDateString();
+  const formatXAxisLabel = (tickItem: Date) => {
+    return tickItem.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const renderChart = () => {
-    const commonProps = {
-      data: chartData,
-      margin: {
-        top: 5,
-        right: 30,
-        left: 20,
-        bottom: 5,
-      },
-    };
-
     const tooltipContent = ({ active, payload, label }: any) => {
       if (active && payload && payload.length) {
         return (
@@ -113,26 +129,27 @@ const Chart: React.FC<ChartTabsProps> = ({
       return null;
     };
 
-    const chartProps = {
-      ...commonProps,
-      children: [
-        <CartesianGrid key="grid" strokeDasharray="3 3" />,
-        <XAxis
-          key="xaxis"
-          dataKey="timestamp"
-          tickFormatter={formatXAxisLabel}
-          tick={{ fontSize: 12 }}
-        />,
-        <YAxis key="yaxis" tick={{ fontSize: 12 }} />,
-        <Tooltip key="tooltip" content={tooltipContent} />,
-        <Legend key="legend" />,
-      ],
-    };
-
     switch (activeTab) {
       case "line":
         return (
-          <LineChart {...chartProps}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={formatXAxisLabel}
+              tick={{ fontSize: 12 }}
+              type="category"
+            />
+            <YAxis 
+              tick={{ fontSize: 12 }} 
+              domain={yAxisDomain}
+              label={{ value: parameterUnit, angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip content={tooltipContent} />
+            <Legend />
             <Line
               type="monotone"
               dataKey="value"
@@ -146,14 +163,48 @@ const Chart: React.FC<ChartTabsProps> = ({
 
       case "bar":
         return (
-          <BarChart {...chartProps}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={formatXAxisLabel}
+              tick={{ fontSize: 12 }}
+              type="category"
+            />
+            <YAxis 
+              tick={{ fontSize: 12 }} 
+              domain={yAxisDomain}
+              label={{ value: parameterUnit, angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip content={tooltipContent} />
+            <Legend />
             <Bar dataKey="value" fill="#82ca9d" name={parameterDisplayName} />
           </BarChart>
         );
 
       case "area":
         return (
-          <AreaChart {...chartProps}>
+          <AreaChart
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={formatXAxisLabel}
+              tick={{ fontSize: 12 }}
+              type="category"
+            />
+            <YAxis 
+              tick={{ fontSize: 12 }} 
+              domain={yAxisDomain}
+              label={{ value: parameterUnit, angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip content={tooltipContent} />
+            <Legend />
             <Area
               type="monotone"
               dataKey="value"

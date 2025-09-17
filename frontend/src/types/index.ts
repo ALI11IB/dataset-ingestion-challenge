@@ -43,7 +43,7 @@ export interface ParametersResponse {
 }
 
 export interface ChartDataPoint {
-  timestamp: string;
+  timestamp: Date;
   value: number;
   date: string;
   time: string;
@@ -57,7 +57,7 @@ export interface ParameterInfo {
 
 export type ChartType = "line" | "bar" | "area";
 
-export interface ChartTabsProps {
+export interface ChartProps {
   parameter: string;
   parameterDisplayName: string;
   parameterUnit: string;

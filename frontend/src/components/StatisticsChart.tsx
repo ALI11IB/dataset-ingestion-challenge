@@ -49,16 +49,6 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
   };
 
   const renderChart = () => {
-    const commonProps = {
-      data: chartData,
-      margin: {
-        top: 5,
-        right: 30,
-        left: 20,
-        bottom: 5,
-      },
-    };
-
     const tooltipContent = ({ active, payload, label }: any) => {
       if (active && payload && payload.length) {
         return (
@@ -79,21 +69,21 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
       return null;
     };
 
-    const chartProps = {
-      ...commonProps,
-      children: [
-        <CartesianGrid key="grid" strokeDasharray="3 3" />,
-        <XAxis key="xaxis" dataKey="period" tick={{ fontSize: 12 }} />,
-        <YAxis key="yaxis" tick={{ fontSize: 12 }} />,
-        <Tooltip key="tooltip" content={tooltipContent} />,
-        <Legend key="legend" />,
-      ],
-    };
-
     switch (activeTab) {
       case "line":
         return (
-          <LineChart {...chartProps}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+            <YAxis 
+              tick={{ fontSize: 12 }} 
+              label={{ value: parameterUnit, angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip content={tooltipContent} />
+            <Legend />
             <Line
               type="monotone"
               dataKey="avgValue"
@@ -123,7 +113,18 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
 
       case "bar":
         return (
-          <BarChart {...chartProps}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+            <YAxis 
+              tick={{ fontSize: 12 }} 
+              label={{ value: parameterUnit, angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip content={tooltipContent} />
+            <Legend />
             <Bar dataKey="avgValue" fill="#82ca9d" name="Average" />
             <Bar dataKey="minValue" fill="#ffc658" name="Minimum" />
             <Bar dataKey="maxValue" fill="#8884d8" name="Maximum" />
@@ -132,7 +133,18 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
 
       case "area":
         return (
-          <AreaChart {...chartProps}>
+          <AreaChart
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+            <YAxis 
+              tick={{ fontSize: 12 }} 
+              label={{ value: parameterUnit, angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip content={tooltipContent} />
+            <Legend />
             <Area
               type="monotone"
               dataKey="avgValue"

@@ -1,6 +1,6 @@
 # Air Quality Data Analysis Application
 
-A full-stack web application for analyzing and visualizing air quality data with interactive charts and data ingestion capabilities.
+A high-performance full-stack web application for analyzing and visualizing air quality data with interactive charts, advanced filtering, and efficient data ingestion capabilities.
 
 ## 🚀 Quick Start
 
@@ -25,9 +25,8 @@ A full-stack web application for analyzing and visualizing air quality data with
    cd backend
    npm install
 
-   # Copy environment file and configure database
-   cp env.example .env
-   # Edit .env with your PostgreSQL credentials
+   # Configure database (config.env is already set up)
+   # Edit config.env with your PostgreSQL credentials if needed
 
    # Start the backend server
    npm run start:dev
@@ -51,21 +50,30 @@ A full-stack web application for analyzing and visualizing air quality data with
 
 ```
 dataset-ingestion-challenge/
-├── backend/                 # NestJS API server
+├── backend/                 # Enhanced NestJS API server
 │   ├── src/
-│   │   ├── readings/       # Air quality data endpoints
-│   │   ├── common/         # Shared services & utilities
-│   │   └── config/         # Configuration files
-│   └── uploads/            # CSV file uploads
-├── frontend/               # React application
+│   │   ├── readings/       # Air quality data endpoints & services
+│   │   ├── config/         # Database, app, and cache configuration
+│   │   ├── constants/      # Application constants
+│   │   ├── dto/            # Data transfer objects
+│   │   ├── types/          # TypeScript type definitions
+│   │   ├── utils/          # Utility functions
+│   │   └── migrations/     # Database migrations
+│   ├── uploads/            # CSV file uploads
+│   ├── config.env          # Environment configuration
+│   └── env.example         # Environment template
+├── frontend/               # Enhanced React application
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
+│   │   ├── components/     # Reusable UI components & charts
 │   │   ├── pages/          # Page components
-│   │   ├── services/       # API service layer
+│   │   ├── services/       # API service layer with caching
 │   │   ├── hooks/          # Custom React hooks
-│   │   └── utils/          # Utility functions
+│   │   ├── utils/          # Utility functions
+│   │   ├── types/          # TypeScript type definitions
+│   │   ├── constants/      # Application constants
+│   │   └── styles/         # CSS styling
 │   └── public/             # Static assets
-└── AirQualityUCI.csv       # Sample dataset
+└── uploads/                # Sample CSV datasets
 ```
 
 ## 🛠️ Available Scripts
@@ -88,17 +96,17 @@ dataset-ingestion-challenge/
 
 ### Backend Environment Variables
 
-Create a `.env` file in the `backend` directory:
+The backend uses `config.env` for configuration (already set up):
 
 ```env
-# Database
+# Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-DB_NAME=air_quality_db
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=air_quality
 
-# Application
+# Application Configuration
 PORT=3001
 NODE_ENV=development
 CORS_ORIGIN=http://localhost:3000
@@ -106,27 +114,38 @@ CORS_ORIGIN=http://localhost:3000
 
 ### Database Setup
 
-1. Create a PostgreSQL database named `air_quality_db`
-2. The application will automatically create tables on first run
-3. Use the provided `AirQualityUCI.csv` for initial data ingestion
+1. Create a PostgreSQL database named `air_quality`
+2. The application will automatically create tables and indexes on first run
+3. Use the provided CSV files in the `uploads` directory for initial data ingestion
 
 ## 📊 Features
 
-- **Data Upload**: Upload CSV files with air quality measurements
-- **Interactive Charts**: Visualize data with line, bar, and area charts
+### Core Functionality
+- **Data Upload**: Upload CSV files with comprehensive validation and error reporting
+- **Interactive Charts**: Visualize data with line, bar, and area charts with pagination
 - **Parameter Selection**: Filter data by specific air quality parameters
-- **Date Range Filtering**: Analyze data within custom time periods
-- **Real-time Dashboard**: Monitor air quality trends and statistics
-- **Data Validation**: Comprehensive CSV validation with error reporting
+- **Date Range Filtering**: Analyze data within custom time periods with apply filters
+- **Statistics Dashboard**: Monitor air quality trends with aggregated statistics
+- **Pagination**: Efficient handling of large datasets with configurable page sizes
+
+### Performance Features
+- **Database Indexing**: Optimized queries with strategic database indexes
+- **Connection Pooling**: Efficient database connection management
+- **Caching**: In-memory caching for frequently accessed data
+- **Client-side Caching**: Reduced API calls with intelligent caching
+- **Compression**: Gzip compression for improved performance
+- **Security**: Helmet.js security headers and CORS protection
 
 ## 🎯 API Endpoints
 
 ### Data Management
 
-- `POST /readings/ingest` - Upload and process CSV data
-- `GET /readings/parameters` - Get available parameters
-- `GET /readings/summary` - Get data summary statistics
-- `GET /readings/time-series` - Get time series data
+- `POST /api/readings/ingest` - Upload and process CSV data
+- `GET /api/readings/parameters` - Get available parameters
+- `GET /api/readings/summary` - Get data summary statistics
+- `GET /api/readings/data` - Get paginated time series data with filtering
+- `GET /api/readings/statistics/:parameter` - Get aggregated statistics for a parameter
+- `GET /api/readings/download-error/:filename` - Download validation error files
 
 ## 🧪 Testing
 

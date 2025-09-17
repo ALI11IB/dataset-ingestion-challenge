@@ -69,7 +69,7 @@ export const parseTime = (timeInput: string): string => {
   }
 };
 
-export const createTimestamp = (date: string | Date, time: string): string | null => {
+export const createTimestamp = (date: string | Date, time: string): Date | null => {
   try {
     const parsedDate = parseDate(date);
     if (!parsedDate) return null;
@@ -83,7 +83,7 @@ export const createTimestamp = (date: string | Date, time: string): string | nul
       return null;
     }
 
-    return finalDateTime.toISOString();
+    return finalDateTime;
   } catch (error) {
     console.warn('Error creating timestamp:', error);
     return null;

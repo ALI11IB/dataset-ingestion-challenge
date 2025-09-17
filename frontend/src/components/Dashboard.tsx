@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chart from "./charts/Chart";
 import StatisticsChart from "./StatisticsChart";
-import { useAvailableParameters } from "../hooks/useReadingsData";
+import { useAvailableParameters, useDataSummary } from "../hooks/useReadingsData";
 import { getParameterInfo } from "../utils";
 
 type DashboardTab = "timeseries" | "statistics";
@@ -15,17 +15,43 @@ const Dashboard: React.FC = () => {
     "hourly" | "daily" | "monthly"
   >("daily");
 
+  // Applied filters (used for API calls)
+  const [appliedParameter, setAppliedParameter] = useState<string>("");
+  const [appliedStartDate, setAppliedStartDate] = useState<string>("");
+  const [appliedEndDate, setAppliedEndDate] = useState<string>("");
+  const [appliedAggregation, setAppliedAggregation] = useState<
+    "hourly" | "daily" | "monthly"
+  >("daily");
+
   const {
     parameters,
     loading: parametersLoading,
     error: parametersError,
   } = useAvailableParameters();
 
-  React.useEffect(() => {
+  const {
+    summary,
+    loading: summaryLoading,
+    error: summaryError,
+  } = useDataSummary();
+
+  useEffect(() => {
     if (parameters.length > 0 && !selectedParameter) {
       setSelectedParameter(parameters[0]);
+      setAppliedParameter(parameters[0]); // Auto-apply first parameter for initial load
     }
   }, [parameters, selectedParameter]);
+
+  useEffect(() => {
+    if (summary && !startDate && !endDate) {
+      const startDateStr = summary.dateRange.start.split('T')[0];
+      const endDateStr = summary.dateRange.end.split('T')[0];
+      setStartDate(startDateStr);
+      setEndDate(endDateStr);
+      setAppliedStartDate(startDateStr);
+      setAppliedEndDate(endDateStr);
+    }
+  }, [summary, startDate, endDate]);
 
   if (parametersLoading) {
     return (
@@ -49,40 +75,47 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const parameterInfo = selectedParameter
-    ? getParameterInfo(selectedParameter)
+  const parameterInfo = appliedParameter
+    ? getParameterInfo(appliedParameter)
     : null;
+
+  const applyFilters = () => {
+    setAppliedParameter(selectedParameter);
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+    setAppliedAggregation(aggregation);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "timeseries":
-        return selectedParameter && parameterInfo ? (
+        return appliedParameter && parameterInfo ? (
           <Chart
-            parameter={selectedParameter}
+            parameter={appliedParameter}
             parameterDisplayName={parameterInfo.displayName}
             parameterUnit={parameterInfo.unit}
-            startDate={startDate || undefined}
-            endDate={endDate || undefined}
+            startDate={appliedStartDate || undefined}
+            endDate={appliedEndDate || undefined}
           />
         ) : (
           <div className="no-selection">
-            <p>Please select a parameter to view time series data.</p>
+            <p>Please select a parameter and click "Apply Filters" to view time series data.</p>
           </div>
         );
 
       case "statistics":
-        return selectedParameter && parameterInfo ? (
+        return appliedParameter && parameterInfo ? (
           <StatisticsChart
-            parameter={selectedParameter}
+            parameter={appliedParameter}
             parameterDisplayName={parameterInfo.displayName}
             parameterUnit={parameterInfo.unit}
-            startDate={startDate || undefined}
-            endDate={endDate || undefined}
-            aggregation={aggregation}
+            startDate={appliedStartDate || undefined}
+            endDate={appliedEndDate || undefined}
+            aggregation={appliedAggregation}
           />
         ) : (
           <div className="no-selection">
-            <p>Please select a parameter to view statistics.</p>
+            <p>Please select a parameter and click "Apply Filters" to view statistics.</p>
           </div>
         );
 
@@ -150,6 +183,7 @@ const Dashboard: React.FC = () => {
           />
         </div>
 
+
         {activeTab === "statistics" && (
           <div className="control-group">
             <label htmlFor="aggregation-select">Aggregation</label>
@@ -166,6 +200,17 @@ const Dashboard: React.FC = () => {
             </select>
           </div>
         )}
+
+        <div className="control-group">
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="apply-filters-button"
+            disabled={!selectedParameter}
+          >
+            Apply Filters
+          </button>
+        </div>
       </div>
 
       <div className="tab-content">{renderTabContent()}</div>
