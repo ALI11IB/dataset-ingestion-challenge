@@ -5,9 +5,6 @@ import { ReadingsService } from './readings.service';
 import { ReadingsController } from './readings.controller';
 import { ValidationService } from './validation.service';
 
-/**
- * Module for managing air quality readings
- */
 @Module({
   imports: [TypeOrmModule.forFeature([Readings])],
   controllers: [ReadingsController],

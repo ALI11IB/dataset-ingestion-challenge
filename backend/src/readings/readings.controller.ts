@@ -15,7 +15,6 @@ import { diskStorage } from "multer";
 import { extname, join } from "path";
 import { Response } from "express";
 import {
-  TimeSeriesQueryDto,
   DataSummaryResponseDto,
   UploadResultResponseDto,
   ParametersResponseDto,

@@ -1,7 +1,3 @@
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
 
 export interface RowValidationResult {
   rowIndex: number;
@@ -37,14 +33,6 @@ export interface UploadResult {
   errorFileDownloadUrl?: string;
 }
 
-export interface ParameterMapping {
-  [key: string]: string;
-}
-
-export interface NumericFieldMapping {
-  key: string;
-  field: string;
-}
 
 export interface DatabaseConfig {
   host: string;

@@ -46,19 +46,12 @@ export const NUMERIC_FIELD_MAPPING = [
   { key: 'AH', field: 'absoluteHumidity' }
 ];
 
-export const CSV_HEADERS = [
-  'Row_Index', 'Date', 'Time', 'CO(GT)', 'PT08.S1(CO)', 'NMHC(GT)', 
-  'C6H6(GT)', 'PT08.S2(NMHC)', 'NOx(GT)', 'PT08.S3(NOx)', 'NO2(GT)', 
-  'PT08.S4(NO2)', 'PT08.S5(O3)', 'T', 'RH', 'AH', 'Error_Reasons'
-];
 
 export const BATCH_SIZE = 1000;
 export const ERROR_FILE_CLEANUP_DELAY = 5 * 60 * 1000;
 export const MISSING_VALUE_INDICATOR = '-200';
 export const CSV_SEPARATOR = ';';
 
-export const DEFAULT_PAGE_SIZE = 1000;
-export const MAX_PAGE_SIZE = 10000;
 
 export const QUERY_TIMEOUT = 30000;
 export const CONNECTION_POOL_SIZE = 10;

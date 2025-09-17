@@ -1,23 +1,10 @@
 import {
   IsArray,
-  IsDateString,
   IsNumber,
   IsOptional,
   IsString,
 } from "class-validator";
 
-export class TimeSeriesQueryDto {
-  @IsString()
-  parameter: string;
-
-  @IsOptional()
-  @IsDateString()
-  startDate?: string;
-
-  @IsOptional()
-  @IsDateString()
-  endDate?: string;
-}
 
 export class DataSummaryResponseDto {
   @IsNumber()
