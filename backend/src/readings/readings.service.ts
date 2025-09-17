@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Readings } from './readings.entity';
 import { ValidationService } from './validation.service';
 import { ValidationSummary, RowValidationResult, DataSummary } from '../types';
@@ -13,10 +15,13 @@ import * as csv from 'csv-parser';
  */
 @Injectable()
 export class ReadingsService {
+  private readonly logger = new Logger(ReadingsService.name);
+
   constructor(
     @InjectRepository(Readings)
     private readingsRepository: Repository<Readings>,
     private validationService: ValidationService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   /**
@@ -88,9 +93,17 @@ export class ReadingsService {
   }
 
   /**
-   * Get time series data for a specific parameter
+   * Get time series data for a specific parameter with pagination
    */
-  async getTimeSeriesData(parameter: string, startDate?: string, endDate?: string): Promise<Readings[]> {
+  async getTimeSeriesData(
+    parameter: string, 
+    startDate?: string, 
+    endDate?: string,
+    page: number = 1,
+    limit: number = 1000
+  ): Promise<{ data: Readings[]; total: number; page: number; totalPages: number }> {
+    const startTime = Date.now();
+    
     const queryBuilder = this.readingsRepository.createQueryBuilder('readings');
     
     // Add date range filter if provided
@@ -113,7 +126,35 @@ export class ReadingsService {
     queryBuilder.orderBy('readings.date', 'ASC');
     queryBuilder.addOrderBy('readings.time', 'ASC');
     
-    return queryBuilder.getMany();
+    // Add pagination
+    const offset = (page - 1) * limit;
+    queryBuilder.skip(offset).take(limit);
+    
+    // Get total count for pagination info (separate query without ORDER BY)
+    const countQuery = this.readingsRepository.createQueryBuilder('readings');
+    
+    // Add the same date range filter if provided
+    if (startDate && endDate) {
+      countQuery.where('readings.date BETWEEN :startDate AND :endDate', {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+      });
+    }
+    
+    const totalResult = await countQuery.getCount();
+    const total = totalResult;
+    
+    const data = await queryBuilder.getMany();
+    
+    const executionTime = Date.now() - startTime;
+    this.logger.log(`Time series query for ${parameter} took ${executionTime}ms, returned ${data.length} records`);
+    
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 
   /**
@@ -124,9 +165,17 @@ export class ReadingsService {
   }
 
   /**
-   * Get data summary statistics
+   * Get data summary statistics with caching
    */
   async getDataSummary(): Promise<DataSummary> {
+    const cacheKey = 'data-summary';
+    const cached = await this.cacheManager.get<DataSummary>(cacheKey);
+    
+    if (cached) {
+      this.logger.log('Returning cached data summary');
+      return cached;
+    }
+
     const totalRecords = await this.readingsRepository.count();
     const dateRange = await this.readingsRepository
       .createQueryBuilder('readings')
@@ -134,13 +183,82 @@ export class ReadingsService {
       .addSelect('MAX(readings.date)', 'maxDate')
       .getRawOne();
     
-    return {
+    const summary = {
       totalRecords,
       dateRange: {
         start: dateRange.minDate,
         end: dateRange.maxDate,
       },
     };
+
+    // Cache for 10 minutes
+    await this.cacheManager.set(cacheKey, summary, 600);
+    
+    return summary;
   }
+
+  /**
+   * Get aggregated statistics for a parameter
+   */
+  async getParameterStatistics(
+    parameter: string,
+    startDate?: string,
+    endDate?: string,
+    aggregationType: 'hourly' | 'daily' | 'monthly' = 'daily'
+  ): Promise<any[]> {
+    const startTime = Date.now();
+    
+    if (!PARAMETER_MAPPING[parameter]) {
+      throw new Error(`Invalid parameter: ${parameter}`);
+    }
+
+    const queryBuilder = this.readingsRepository.createQueryBuilder('readings');
+    
+    // Add date range filter if provided
+    if (startDate && endDate) {
+      queryBuilder.where('readings.date BETWEEN :startDate AND :endDate', {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+      });
+    }
+
+    // Build aggregation query based on type
+    let dateTrunc: string;
+    switch (aggregationType) {
+      case 'hourly':
+        dateTrunc = "DATE_TRUNC('hour', readings.date)";
+        break;
+      case 'daily':
+        dateTrunc = "DATE_TRUNC('day', readings.date)";
+        break;
+      case 'monthly':
+        dateTrunc = "DATE_TRUNC('month', readings.date)";
+        break;
+      default:
+        dateTrunc = "DATE_TRUNC('day', readings.date)";
+    }
+
+    const parameterField = PARAMETER_MAPPING[parameter].replace('readings.', '');
+    
+    queryBuilder
+      .select([
+        `${dateTrunc} as period`,
+        `AVG(readings.${parameterField}) as avg_value`,
+        `MIN(readings.${parameterField}) as min_value`,
+        `MAX(readings.${parameterField}) as max_value`,
+        `COUNT(readings.${parameterField}) as count`
+      ])
+      .where(`readings.${parameterField} IS NOT NULL`)
+      .groupBy('period')
+      .orderBy('period', 'ASC');
+
+    const result = await queryBuilder.getRawMany();
+    
+    const executionTime = Date.now() - startTime;
+    this.logger.log(`Statistics query for ${parameter} (${aggregationType}) took ${executionTime}ms, returned ${result.length} records`);
+    
+    return result;
+  }
+
 }
 

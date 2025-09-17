@@ -41,15 +41,15 @@ const ChartTabs: React.FC<ChartTabsProps> = ({
       setLoading(true);
       setError(null);
 
-      const rawData = await ReadingsService.getTimeSeriesData(
+      const response = await ReadingsService.getTimeSeriesData(
         parameter,
         startDate,
         endDate
       );
 
       // Transform data for chart display
-      const chartData: ChartDataPoint[] = rawData
-        .map((point) => {
+      const chartData: ChartDataPoint[] = response.data
+        .map((point: any) => {
           const value = point[parameter];
           if (value === null || value === undefined) return null;
 
@@ -65,7 +65,7 @@ const ChartTabs: React.FC<ChartTabsProps> = ({
         })
         .filter((point): point is ChartDataPoint => point !== null)
         .sort(
-          (a, b) =>
+          (a: ChartDataPoint, b: ChartDataPoint) =>
             new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
 

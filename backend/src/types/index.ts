@@ -1,5 +1,3 @@
-// Centralized type definitions for the backend
-
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];

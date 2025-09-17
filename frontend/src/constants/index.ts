@@ -1,8 +1,6 @@
-// Application constants
-
 export const API_BASE_URL = "http://localhost:3001/api/readings";
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export const REQUIRED_CSV_COLUMNS = [
   'Date', 

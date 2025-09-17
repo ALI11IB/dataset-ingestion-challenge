@@ -15,7 +15,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="header-content">
           <div className="logo">
             <h1>Air Quality Monitor</h1>
-            <p>Environmental Data Analysis Platform</p>
           </div>
           <nav className="navigation">
             <Link
@@ -37,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="main-content">{children}</main>
 
       <footer className="footer">
-        <p>&copy; 2024 Air Quality Monitor. Built with React & NestJS.</p>
+        <p>&copy; 2025 Air Quality Monitor. Built with React & NestJS.</p>
       </footer>
     </div>
   );

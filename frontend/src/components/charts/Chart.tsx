@@ -16,6 +16,7 @@ import {
 import { useReadingsData } from "../../hooks/useReadingsData";
 import { ChartTabsProps, ChartDataPoint, ChartType } from "../../types";
 import { createTimestamp } from "../../utils";
+import Pagination from "../Pagination";
 
 const Chart: React.FC<ChartTabsProps> = ({
   parameter,
@@ -25,15 +26,22 @@ const Chart: React.FC<ChartTabsProps> = ({
   endDate,
 }) => {
   const [activeTab, setActiveTab] = useState<ChartType>("line");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(1000);
 
   const {
     data: rawData,
+    pagination,
     loading,
     error,
+    setPage: setPageFromHook,
+    setLimit: setLimitFromHook,
   } = useReadingsData({
     parameter,
     startDate,
     endDate,
+    page,
+    limit,
     autoFetch: true,
   });
 
@@ -248,7 +256,7 @@ const Chart: React.FC<ChartTabsProps> = ({
               <div className="chart-stat-value">
                 {stats.count.toLocaleString()}
               </div>
-              <div className="chart-stat-label">Data Points</div>
+              <div className="chart-stat-label">Data Points (Current Page)</div>
             </div>
             <div className="chart-stat">
               <div className="chart-stat-value">{stats.min.toFixed(2)}</div>
@@ -262,11 +270,37 @@ const Chart: React.FC<ChartTabsProps> = ({
               <div className="chart-stat-value">{stats.avg.toFixed(2)}</div>
               <div className="chart-stat-label">Average</div>
             </div>
+            <div className="chart-stat">
+              <div className="chart-stat-value">
+                {pagination.total.toLocaleString()}
+              </div>
+              <div className="chart-stat-label">Total Records</div>
+            </div>
           </div>
           <div>
             Date range: {formatXAxisLabel(chartData[0].timestamp)} -{" "}
             {formatXAxisLabel(chartData[chartData.length - 1].timestamp)}
           </div>
+        </div>
+      )}
+
+      {pagination.totalPages > 1 && (
+        <div className="chart-pagination">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.total}
+            itemsPerPage={limit}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              setPageFromHook(newPage);
+            }}
+            onItemsPerPageChange={(newLimit) => {
+              setLimit(newLimit);
+              setLimitFromHook(newLimit);
+            }}
+            loading={loading}
+          />
         </div>
       )}
     </div>

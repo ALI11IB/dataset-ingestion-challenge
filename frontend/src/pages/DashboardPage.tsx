@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import Dashboard from '../components/Dashboard';
-import { ReadingsService } from '../services/readingsService';
-import { DataSummary } from '../types';
+import React, { useState, useEffect } from "react";
+import Dashboard from "../components/Dashboard";
+import { ReadingsService } from "../services/readingsService";
+import { DataSummary } from "../types";
 
 const DashboardPage: React.FC = () => {
   const [dataSummary, setDataSummary] = useState<DataSummary | null>(null);
@@ -51,7 +51,9 @@ const DashboardPage: React.FC = () => {
                 <div className="summary-icon">📊</div>
                 <div className="summary-content">
                   <h3>Total Records</h3>
-                  <p className="summary-value">{dataSummary.totalRecords.toLocaleString()}</p>
+                  <p className="summary-value">
+                    {dataSummary.totalRecords.toLocaleString()}
+                  </p>
                 </div>
               </div>
               <div className="summary-card">

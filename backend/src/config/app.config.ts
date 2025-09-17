@@ -1,5 +1,3 @@
-// Application configuration
-
 import { AppConfig } from '../types';
 
 export const getAppConfig = (): AppConfig => {

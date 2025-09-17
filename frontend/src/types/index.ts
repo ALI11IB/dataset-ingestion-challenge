@@ -1,10 +1,15 @@
-// Centralized type definitions for the application
-
 export interface ReadingsDataPoint {
   id: number;
   date: string;
   time: string;
   [key: string]: any;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export interface DataSummary {
@@ -23,6 +28,18 @@ export interface UploadResult {
     invalidRows: number;
   };
   errorFileDownloadUrl?: string;
+}
+
+export interface ParameterStatistics {
+  period: string;
+  avg_value: string;
+  min_value: string;
+  max_value: string;
+  count: string;
+}
+
+export interface ParametersResponse {
+  parameters: string[];
 }
 
 export interface ChartDataPoint {
@@ -46,6 +63,15 @@ export interface ChartTabsProps {
   parameterUnit: string;
   startDate?: string;
   endDate?: string;
+}
+
+export interface StatisticsChartProps {
+  parameter: string;
+  parameterDisplayName: string;
+  parameterUnit: string;
+  startDate?: string;
+  endDate?: string;
+  aggregation?: "hourly" | "daily" | "monthly";
 }
 
 export interface DataUploadProps {

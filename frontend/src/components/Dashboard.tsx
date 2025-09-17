@@ -1,12 +1,19 @@
 import React, { useState } from "react";
 import Chart from "./charts/Chart";
+import StatisticsChart from "./StatisticsChart";
 import { useAvailableParameters } from "../hooks/useReadingsData";
 import { getParameterInfo } from "../utils";
 
+type DashboardTab = "timeseries" | "statistics";
+
 const Dashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<DashboardTab>("timeseries");
   const [selectedParameter, setSelectedParameter] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
+  const [aggregation, setAggregation] = useState<
+    "hourly" | "daily" | "monthly"
+  >("daily");
 
   const {
     parameters,
@@ -47,9 +54,62 @@ const Dashboard: React.FC = () => {
     ? getParameterInfo(selectedParameter)
     : null;
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "timeseries":
+        return selectedParameter && parameterInfo ? (
+          <Chart
+            parameter={selectedParameter}
+            parameterDisplayName={parameterInfo.displayName}
+            parameterUnit={parameterInfo.unit}
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+          />
+        ) : (
+          <div className="no-selection">
+            <p>Please select a parameter to view time series data.</p>
+          </div>
+        );
+
+      case "statistics":
+        return selectedParameter && parameterInfo ? (
+          <StatisticsChart
+            parameter={selectedParameter}
+            parameterDisplayName={parameterInfo.displayName}
+            parameterUnit={parameterInfo.unit}
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+            aggregation={aggregation}
+          />
+        ) : (
+          <div className="no-selection">
+            <p>Please select a parameter to view statistics.</p>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="dashboard">
-      <h2>Air Quality Data Visualization</h2>
+      <h2> Air Quality Data Analysis</h2>
+
+      <div className="dashboard-tabs">
+        <button
+          className={`tab-button ${activeTab === "timeseries" ? "active" : ""}`}
+          onClick={() => setActiveTab("timeseries")}
+        >
+          Time Series
+        </button>
+        <button
+          className={`tab-button ${activeTab === "statistics" ? "active" : ""}`}
+          onClick={() => setActiveTab("statistics")}
+        >
+          Statistics
+        </button>
+      </div>
 
       <div className="controls">
         <div className="control-group">
@@ -90,17 +150,26 @@ const Dashboard: React.FC = () => {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
+
+        {activeTab === "statistics" && (
+          <div className="control-group">
+            <label htmlFor="aggregation-select">Aggregation</label>
+            <select
+              id="aggregation-select"
+              value={aggregation}
+              onChange={(e) =>
+                setAggregation(e.target.value as "hourly" | "daily" | "monthly")
+              }
+            >
+              <option value="hourly">Hourly</option>
+              <option value="daily">Daily</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        )}
       </div>
 
-      {selectedParameter && parameterInfo && (
-        <Chart
-          parameter={selectedParameter}
-          parameterDisplayName={parameterInfo.displayName}
-          parameterUnit={parameterInfo.unit}
-          startDate={startDate || undefined}
-          endDate={endDate || undefined}
-        />
-      )}
+      <div className="tab-content">{renderTabContent()}</div>
     </div>
   );
 };

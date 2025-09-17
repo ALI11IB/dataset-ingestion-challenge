@@ -1,56 +1,76 @@
 import axios from "axios";
-import { ReadingsDataPoint, DataSummary, UploadResult } from "../types";
+import { 
+  ReadingsDataPoint, 
+  DataSummary, 
+  UploadResult, 
+  PaginatedResponse,
+  ParameterStatistics,
+  ParametersResponse
+} from "../types";
 import { API_BASE_URL } from "../constants";
+import { apiCache } from "../utils/cache";
 
-/**
- * Service class for handling air quality data API calls
- */
 export class ReadingsService {
   private static api = axios.create({
     baseURL: API_BASE_URL,
     timeout: 30000,
   });
 
-  /**
-   * Get list of available air quality parameters
-   */
   static async getAvailableParameters(): Promise<string[]> {
+    const cacheKey = "available-parameters";
+    const cached = apiCache.get(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
     try {
-      const response = await this.api.get("/parameters");
-      return response.data;
+      const response = await this.api.get<ParametersResponse>("/parameters");
+      const parameters = response.data.parameters;
+      apiCache.set(cacheKey, parameters, 600000);
+      return parameters;
     } catch (error) {
       console.error("Error fetching available parameters:", error);
       throw error;
     }
   }
 
-  /**
-   * Get summary statistics of the dataset
-   */
   static async getDataSummary(): Promise<DataSummary> {
+    const cacheKey = "data-summary";
+    const cached = apiCache.get(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
     try {
       const response = await this.api.get("/summary");
-      return response.data;
+      const summary = response.data;
+      apiCache.set(cacheKey, summary, 300000);
+      return summary;
     } catch (error) {
       console.error("Error fetching data summary:", error);
       throw error;
     }
   }
 
-  /**
-   * Get time series data for a specific parameter
-   */
   static async getTimeSeriesData(
     parameter: string,
     startDate?: string,
-    endDate?: string
-  ): Promise<ReadingsDataPoint[]> {
+    endDate?: string,
+    page: number = 1,
+    limit: number = 1000
+  ): Promise<PaginatedResponse<ReadingsDataPoint>> {
     try {
-      const params: Record<string, string> = { parameter };
+      const params: Record<string, string | number> = { 
+        parameter,
+        page: page.toString(),
+        limit: limit.toString()
+      };
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
 
-      const response = await this.api.get("/data", { params });
+      const response = await this.api.get<PaginatedResponse<ReadingsDataPoint>>("/data", { params });
       return response.data;
     } catch (error) {
       console.error("Error fetching time series data:", error);
@@ -58,9 +78,25 @@ export class ReadingsService {
     }
   }
 
-  /**
-   * Upload CSV file with air quality data
-   */
+  static async getParameterStatistics(
+    parameter: string,
+    startDate?: string,
+    endDate?: string,
+    aggregation: 'hourly' | 'daily' | 'monthly' = 'daily'
+  ): Promise<ParameterStatistics[]> {
+    try {
+      const params: Record<string, string> = { aggregation };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+
+      const response = await this.api.get<ParameterStatistics[]>(`/statistics/${parameter}`, { params });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching parameter statistics:", error);
+      throw error;
+    }
+  }
+
   static async uploadData(file: File): Promise<UploadResult> {
     try {
       const formData = new FormData();
@@ -79,9 +115,6 @@ export class ReadingsService {
     }
   }
 
-  /**
-   * Download error file for validation issues
-   */
   static downloadErrorFile(downloadUrl: string): void {
     const link = document.createElement('a');
     link.href = `http://localhost:3001${downloadUrl}`;

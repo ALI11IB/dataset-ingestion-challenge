@@ -1,11 +1,6 @@
-// Utility functions for the application
-
 import { ParameterInfo } from '../types';
 import { MAX_FILE_SIZE, REQUIRED_CSV_COLUMNS } from '../constants';
 
-/**
- * Get display name and unit for air quality parameters
- */
 export const getParameterInfo = (param: string): ParameterInfo => {
   const parameterMap: Record<string, ParameterInfo> = {
     co: { key: 'co', displayName: 'Carbon Monoxide (CO)', unit: 'mg/m³' },
@@ -26,27 +21,21 @@ export const getParameterInfo = (param: string): ParameterInfo => {
   return parameterMap[param] || { key: param, displayName: param, unit: '' };
 };
 
-/**
- * Parse and validate date from various formats
- */
 export const parseDate = (dateInput: string | Date): Date | null => {
   try {
     let date: Date;
 
     if (typeof dateInput === 'string') {
-      // Handle DD/MM/YYYY format
       if (dateInput.includes('/')) {
         const [day, month, year] = dateInput.split('/');
         date = new Date(`${year}-${month}-${day}`);
       } else {
-        // Handle ISO format or other standard formats
         date = new Date(dateInput);
       }
     } else {
       date = new Date(dateInput);
     }
 
-    // Validate the date
     if (isNaN(date.getTime())) {
       console.warn('Invalid date:', dateInput);
       return null;
@@ -59,19 +48,14 @@ export const parseDate = (dateInput: string | Date): Date | null => {
   }
 };
 
-/**
- * Parse and validate time string
- */
 export const parseTime = (timeInput: string): string => {
   try {
     let timeStr = timeInput || '00:00:00';
 
-    // Handle HH.MM.SS format
     if (timeStr && !timeStr.includes(':')) {
       timeStr = timeStr.replace(/\./g, ':');
     }
 
-    // Validate time format
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
     if (!timeRegex.test(timeStr)) {
       console.warn('Invalid time format:', timeInput, 'Using default 00:00:00');
@@ -85,9 +69,6 @@ export const parseTime = (timeInput: string): string => {
   }
 };
 
-/**
- * Create ISO timestamp from date and time
- */
 export const createTimestamp = (date: string | Date, time: string): string | null => {
   try {
     const parsedDate = parseDate(date);
@@ -109,9 +90,6 @@ export const createTimestamp = (date: string | Date, time: string): string | nul
   }
 };
 
-/**
- * Format file size in human readable format
- */
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -120,9 +98,6 @@ export const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-/**
- * Validate CSV file
- */
 export const validateCSVFile = (file: File): string[] => {
   const errors: string[] = [];
 
@@ -141,9 +116,6 @@ export const validateCSVFile = (file: File): string[] => {
   return errors;
 };
 
-/**
- * Validate CSV content
- */
 export const validateCSVContent = async (file: File): Promise<string[]> => {
   const errors: string[] = [];
   

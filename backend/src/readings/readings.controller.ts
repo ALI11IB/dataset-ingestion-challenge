@@ -27,7 +27,7 @@ import * as fs from "fs";
 /**
  * Controller for handling air quality readings API endpoints
  */
-@Controller("api/readings")
+@Controller("readings")
 export class ReadingsController {
   constructor(private readonly readingsService: ReadingsService) {}
 
@@ -133,13 +133,15 @@ export class ReadingsController {
   }
 
   /**
-   * Get time series data for a specific parameter
+   * Get time series data for a specific parameter with pagination
    */
   @Get("data")
   async getData(
     @Query("parameter") parameter: string,
     @Query("startDate") startDate?: string,
-    @Query("endDate") endDate?: string
+    @Query("endDate") endDate?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string
   ) {
     if (!parameter) {
       throw new BadRequestException("Parameter is required");
@@ -149,12 +151,50 @@ export class ReadingsController {
       throw new BadRequestException(`Invalid parameter: ${parameter}`);
     }
 
+    const pageNum = page ? parseInt(page) : 1;
+    const limitNum = limit ? parseInt(limit) : 1000;
+
+    if (pageNum < 1 || limitNum < 1 || limitNum > 10000) {
+      throw new BadRequestException("Invalid pagination parameters");
+    }
+
     return this.readingsService.getTimeSeriesData(
       parameter,
       startDate,
-      endDate
+      endDate,
+      pageNum,
+      limitNum
     );
   }
+
+  /**
+   * Get aggregated statistics for a parameter
+   */
+  @Get("statistics/:parameter")
+  async getParameterStatistics(
+    @Param("parameter") parameter: string,
+    @Query("startDate") startDate?: string,
+    @Query("endDate") endDate?: string,
+    @Query("aggregation") aggregation?: string
+  ) {
+    if (!AVAILABLE_PARAMETERS.includes(parameter)) {
+      throw new BadRequestException(`Invalid parameter: ${parameter}`);
+    }
+
+    const aggregationType = aggregation as 'hourly' | 'daily' | 'monthly' || 'daily';
+    
+    if (!['hourly', 'daily', 'monthly'].includes(aggregationType)) {
+      throw new BadRequestException("Invalid aggregation type. Must be: hourly, daily, or monthly");
+    }
+
+    return this.readingsService.getParameterStatistics(
+      parameter,
+      startDate,
+      endDate,
+      aggregationType
+    );
+  }
+
 
   /**
    * Download error file for validation issues
