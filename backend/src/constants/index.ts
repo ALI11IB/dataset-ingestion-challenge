@@ -59,12 +59,7 @@ export const CSV_SEPARATOR = ';';
 
 export const DEFAULT_PAGE_SIZE = 1000;
 export const MAX_PAGE_SIZE = 10000;
-export const CACHE_TTL = 300;
-export const CACHE_MAX_ITEMS = 1000;
 
 export const QUERY_TIMEOUT = 30000;
 export const CONNECTION_POOL_SIZE = 10;
 export const CONNECTION_POOL_IDLE_TIMEOUT = 30000;
-
-export const ASYNC_BATCH_SIZE = 500;
-export const JOB_CLEANUP_INTERVAL = 24 * 60 * 60 * 1000;
